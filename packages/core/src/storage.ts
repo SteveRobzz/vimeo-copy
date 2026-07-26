@@ -9,6 +9,7 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import type { Readable } from "node:stream";
 import { storageEnv } from "./env";
 
 // Lazy singleton so importing this module never throws before env is set.
@@ -36,6 +37,24 @@ export function bucket(): string {
 export function sourceKey(videoId: string, filename: string): string {
   const safe = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   return `videos/${videoId}/source/${safe}`;
+}
+
+// HLS output layout (worker → player). Master references per-rung playlists,
+// each of which lives in its own folder alongside its .ts segments.
+export function hlsPrefix(videoId: string): string {
+  return `videos/${videoId}/hls`;
+}
+export function hlsMasterKey(videoId: string): string {
+  return `${hlsPrefix(videoId)}/master.m3u8`;
+}
+export function hlsVariantKey(videoId: string, label: string): string {
+  return `${hlsPrefix(videoId)}/${label}/index.m3u8`;
+}
+export function thumbnailKey(videoId: string): string {
+  return `videos/${videoId}/thumbnail.jpg`;
+}
+export function captionKey(videoId: string, language: string): string {
+  return `videos/${videoId}/captions/${language}.vtt`;
 }
 
 export interface UploadedPart {
@@ -123,6 +142,58 @@ export async function signGetUrl(key: string, expiresIn = 3600): Promise<string>
     s3(),
     new GetObjectCommand({ Bucket: bucket(), Key: key }),
     { expiresIn }
+  );
+}
+
+// Fetch an object's body as a Node Readable stream (worker: download source).
+export async function getObjectStream(key: string): Promise<Readable> {
+  const out = await s3().send(
+    new GetObjectCommand({ Bucket: bucket(), Key: key })
+  );
+  return out.Body as Readable;
+}
+
+export interface ObjectResponse {
+  body: Readable;
+  contentType?: string;
+  contentLength?: number;
+  contentRange?: string;
+  // 206 when a Range was requested and honored, else 200.
+  status: 200 | 206;
+}
+
+// Fetch an object, optionally honoring an HTTP Range header (needed so the
+// player-page proxy (Step 5) supports seeking within .ts segments / progressive
+// files). Returns the raw body stream plus the headers to pass back through.
+export async function getObjectRange(
+  key: string,
+  range?: string
+): Promise<ObjectResponse> {
+  const out = await s3().send(
+    new GetObjectCommand({ Bucket: bucket(), Key: key, Range: range })
+  );
+  return {
+    body: out.Body as Readable,
+    contentType: out.ContentType,
+    contentLength: out.ContentLength,
+    contentRange: out.ContentRange,
+    status: out.ContentRange ? 206 : 200,
+  };
+}
+
+// Upload a rendition/playlist/thumbnail artifact (worker: push outputs).
+export async function putObject(
+  key: string,
+  body: Buffer | Readable | Uint8Array | string,
+  contentType: string
+): Promise<void> {
+  await s3().send(
+    new PutObjectCommand({
+      Bucket: bucket(),
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    })
   );
 }
 

@@ -1,6 +1,6 @@
-import { Queue } from "bullmq";
+import { Queue, Worker, type Processor, type WorkerOptions } from "bullmq";
 import IORedis from "ioredis";
-import { QUEUE_NAMES } from "./index";
+import { QUEUE_NAMES, type TranscodeJobData } from "./index";
 import { redisEnv } from "./env";
 
 // Shared Redis connection. maxRetriesPerRequest must be null for BullMQ.
@@ -25,4 +25,17 @@ export function transcodeQueue(): Queue {
   return _transcodeQueue;
 }
 
-export { Queue };
+// Consumer side (used by the worker to process transcode jobs). Kept here so
+// both sides share one queue name + connection config.
+export function transcodeWorker(
+  processor: Processor<TranscodeJobData>,
+  opts: Partial<WorkerOptions> = {}
+): Worker<TranscodeJobData> {
+  return new Worker<TranscodeJobData>(QUEUE_NAMES.TRANSCODE, processor, {
+    connection: redisConnection(),
+    concurrency: 1,
+    ...opts,
+  });
+}
+
+export { Queue, Worker };

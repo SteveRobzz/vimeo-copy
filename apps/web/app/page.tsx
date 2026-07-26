@@ -18,8 +18,8 @@ export default function HomePage() {
       <ol className="space-y-2 text-sm text-neutral-300">
         <li>✅ Step 2 — Monorepo + Prisma schema + Next.js scaffold</li>
         <li>✅ Step 3 — Resumable upload → object storage → enqueue transcode</li>
-        <li className="text-neutral-500">⬜ Step 4 — FFmpeg worker: probe → ladder → HLS → captions</li>
-        <li className="text-neutral-500">⬜ Step 5 — hls.js player page</li>
+        <li>✅ Step 4 — FFmpeg worker: probe → ladder → HLS → captions</li>
+        <li>✅ Step 5 — hls.js player page</li>
         <li className="text-neutral-500">⬜ Step 6 — Creator dashboard</li>
         <li className="text-neutral-500">⬜ Step 7 — Privacy controls + signed URLs</li>
         <li className="text-neutral-500">⬜ Step 8 — Deploy (Vercel + Railway + R2)</li>

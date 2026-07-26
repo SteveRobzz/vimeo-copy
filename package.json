@@ -4,6 +4,7 @@
   "packageManager": "pnpm@9.15.9",
   "scripts": {
     "dev:web": "pnpm --filter @vp/web dev",
+    "dev:worker": "pnpm --filter @vp/worker dev",
     "build:web": "pnpm --filter @vp/web build",
     "db:generate": "pnpm --filter @vp/db generate",
     "db:migrate": "pnpm --filter @vp/db migrate",
