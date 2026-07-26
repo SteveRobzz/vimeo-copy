@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Force | Select-Object Mode, Name; Write-Output \"---\"; Write-Output \"Node: $\\(node -v 2>$null\\)\"; Write-Output \"npm: $\\(npm -v 2>$null\\)\"; Write-Output \"git: $\\(git --version 2>$null\\)\"; Write-Output \"docker: $\\(docker --version 2>$null\\)\"; Write-Output \"ffmpeg: $\\(\\(Get-Command ffmpeg -ErrorAction SilentlyContinue\\).Source\\)\")",
+      "PowerShell(Get-ChildItem -Force | Select-Object Mode, Length, Name; Write-Output \"---\"; \\(Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Measure-Object\\).Count)",
+      "PowerShell(function v\\($n,$c\\){ try { \"$n = \" + \\(& $c 2>$null\\) } catch { \"$n = MISSING\" } }; v \"node\" { node -v }; v \"pnpm\" { pnpm -v }; v \"npm\" { npm -v }; v \"docker\" { docker -v }; v \"ffmpeg\" { \\(ffmpeg -version | Select-Object -First 1\\) }; v \"git\" { git --version })",
+      "PowerShell(winget install *)"
+    ]
+  }
+}

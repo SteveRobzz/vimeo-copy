@@ -1,0 +1,16 @@
+{
+  "name": "video-platform",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev:web": "pnpm --filter @vp/web dev",
+    "build:web": "pnpm --filter @vp/web build",
+    "db:generate": "pnpm --filter @vp/db generate",
+    "db:migrate": "pnpm --filter @vp/db migrate",
+    "db:migrate:deploy": "pnpm --filter @vp/db migrate:deploy",
+    "db:studio": "pnpm --filter @vp/db studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
