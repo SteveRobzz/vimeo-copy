@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Uppy, { type UppyFile } from "@uppy/core";
-import { Dashboard } from "@uppy/react";
+import Dashboard from "@uppy/dashboard";
 import AwsS3 from "@uppy/aws-s3";
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
@@ -20,15 +20,16 @@ async function postJson(url: string, body: unknown) {
 }
 
 export default function UploadPage() {
+  const mountRef = useRef<HTMLDivElement>(null);
+  const uppyRef = useRef<Uppy | null>(null);
   const [done, setDone] = useState<Done[]>([]);
 
-  const uppy = useMemo(() => {
+  useEffect(() => {
+    if (uppyRef.current || !mountRef.current) return;
+
     const u = new Uppy({
       autoProceed: false,
-      restrictions: {
-        maxNumberOfFiles: 1,
-        allowedFileTypes: ["video/*"],
-      },
+      restrictions: { maxNumberOfFiles: 1, allowedFileTypes: ["video/*"] },
     });
 
     u.use(AwsS3, {
@@ -82,6 +83,14 @@ export default function UploadPage() {
       },
     });
 
+    u.use(Dashboard, {
+      target: mountRef.current,
+      inline: true,
+      height: 340,
+      proudlyDisplayPoweredByUppy: false,
+      note: "Video files only — chunked, resumable upload straight to storage.",
+    });
+
     u.on("complete", (result) => {
       const finished = result.successful ?? [];
       setDone((prev) => [
@@ -93,7 +102,12 @@ export default function UploadPage() {
       ]);
     });
 
-    return u;
+    uppyRef.current = u;
+
+    return () => {
+      u.destroy();
+      uppyRef.current = null;
+    };
   }, []);
 
   return (
@@ -106,7 +120,7 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <Dashboard uppy={uppy} proudlyDisplayPoweredByUppy={false} height={340} />
+      <div ref={mountRef} />
 
       {done.length > 0 && (
         <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-4 text-sm">

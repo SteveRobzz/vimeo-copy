@@ -12,7 +12,6 @@
     "@uppy/aws-s3": "^4.1.0",
     "@uppy/core": "^4.2.3",
     "@uppy/dashboard": "^4.1.2",
-    "@uppy/react": "^4.0.4",
     "@vp/core": "workspace:*",
     "@vp/db": "workspace:*",
     "next": "14.2.5",
