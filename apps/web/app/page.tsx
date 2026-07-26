@@ -8,9 +8,16 @@ export default function HomePage() {
         </p>
       </div>
 
+      <a
+        href="/upload"
+        className="inline-flex w-fit items-center rounded-md bg-white px-4 py-2 text-sm font-medium text-neutral-900 hover:bg-neutral-200"
+      >
+        Upload a video →
+      </a>
+
       <ol className="space-y-2 text-sm text-neutral-300">
         <li>✅ Step 2 — Monorepo + Prisma schema + Next.js scaffold</li>
-        <li className="text-neutral-500">⬜ Step 3 — Resumable upload → object storage → enqueue transcode</li>
+        <li>✅ Step 3 — Resumable upload → object storage → enqueue transcode</li>
         <li className="text-neutral-500">⬜ Step 4 — FFmpeg worker: probe → ladder → HLS → captions</li>
         <li className="text-neutral-500">⬜ Step 5 — hls.js player page</li>
         <li className="text-neutral-500">⬜ Step 6 — Creator dashboard</li>
