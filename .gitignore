@@ -12,6 +12,6 @@ out/
 *.tsbuildinfo
 # Prisma
 packages/db/generated/
-# local media scratch
-tmp/
-uploads/
+# local media scratch (repo-root only — must NOT match app/api/uploads/, etc.)
+/tmp/
+/uploads/
