@@ -5,8 +5,10 @@ import {
   CompleteMultipartUploadCommand,
   AbortMultipartUploadCommand,
   ListPartsCommand,
+  ListObjectsV2Command,
   GetObjectCommand,
   PutObjectCommand,
+  DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "node:stream";
@@ -195,6 +197,41 @@ export async function putObject(
       ContentType: contentType,
     })
   );
+}
+
+// Delete every object under a prefix (dashboard: remove all artifacts for a
+// video). Pages through the listing and batch-deletes (S3 caps at 1000/call).
+export async function deletePrefix(prefix: string): Promise<number> {
+  let deleted = 0;
+  let continuationToken: string | undefined;
+  do {
+    const listed = await s3().send(
+      new ListObjectsV2Command({
+        Bucket: bucket(),
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      })
+    );
+    const objects = (listed.Contents ?? [])
+      .map((o) => o.Key)
+      .filter((k): k is string => Boolean(k));
+    if (objects.length > 0) {
+      await s3().send(
+        new DeleteObjectsCommand({
+          Bucket: bucket(),
+          Delete: { Objects: objects.map((Key) => ({ Key })), Quiet: true },
+        })
+      );
+      deleted += objects.length;
+    }
+    continuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+  } while (continuationToken);
+  return deleted;
+}
+
+// All artifacts for a video live under this prefix.
+export function videoPrefix(videoId: string): string {
+  return `videos/${videoId}/`;
 }
 
 export { GetObjectCommand, PutObjectCommand };
