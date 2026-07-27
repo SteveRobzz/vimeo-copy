@@ -1,0 +1,11 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://REPLACE-WITH-YOUR-VERCEL-DOMAIN.vercel.app"
+    ],
+    "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
