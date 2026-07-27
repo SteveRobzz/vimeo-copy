@@ -1,58 +1,50 @@
 import type { Config } from "tailwindcss";
 
+// "Loop" design system — a clean, light YouTube-style theme.
+// Palette is oklch (Loop's own values); accent is indigo #3355CC.
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        // Near-black navy base — the "black" of the palette.
+        accent: {
+          DEFAULT: "#3355CC",
+          hover: "#2b48ad",
+          soft: "oklch(0.9 0.05 264)",
+        },
+        // Surfaces
+        paper: "oklch(0.99 0.004 250)", // page background
+        panel: "oklch(0.965 0.006 250)", // cards / inputs
+        panel2: "oklch(0.98 0.004 250)", // dropzone / subtle fills
+        // Text
         ink: {
-          DEFAULT: "#070b16",
-          800: "#0b1120",
-          700: "#0f1930",
+          DEFAULT: "oklch(0.22 0.015 250)", // primary
+          2: "oklch(0.4 0.015 250)", // secondary
+          3: "oklch(0.5 0.015 250)", // muted
         },
-        // Five working shades of blue (300→700) plus a near-white tint and a
-        // deep navy, so everything on the page reads as one blue family.
-        brand: {
-          50: "#eaf3ff",
-          100: "#cfe3ff",
-          300: "#7db4ff", // blue 1 — light
-          400: "#4f97ff", // blue 2
-          500: "#2f7bf6", // blue 3 — core accent
-          600: "#1e5fe0", // blue 4
-          700: "#1746b0", // blue 5 — deep
-          900: "#0b2560", // deepest navy
-        },
+        // Lines
+        line: "oklch(0.9 0.008 250)",
+        line2: "oklch(0.88 0.01 250)",
+        danger: "oklch(0.5 0.15 25)",
+      },
+      fontFamily: {
+        sans: ["var(--font-manrope)", "system-ui", "sans-serif"],
+        mono: ["var(--font-jbmono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
-        glow: "0 0 0 1px rgba(79,151,255,0.25), 0 20px 60px -20px rgba(47,123,246,0.55)",
-        "glow-sm": "0 10px 30px -12px rgba(47,123,246,0.5)",
+        card: "0 1px 2px rgba(20,25,40,0.04), 0 6px 20px -12px rgba(20,25,40,0.12)",
+        pop: "0 10px 30px -10px rgba(20,25,40,0.25)",
       },
       keyframes: {
-        blob: {
-          "0%, 100%": { transform: "translate(0px, 0px) scale(1)" },
-          "33%": { transform: "translate(30px, -40px) scale(1.1)" },
-          "66%": { transform: "translate(-25px, 25px) scale(0.95)" },
-        },
-        "gradient-pan": {
-          "0%, 100%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-        },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
-        "pulse-ring": {
-          "0%": { boxShadow: "0 0 0 0 rgba(79,151,255,0.5)" },
-          "70%": { boxShadow: "0 0 0 12px rgba(79,151,255,0)" },
-          "100%": { boxShadow: "0 0 0 0 rgba(79,151,255,0)" },
+        shimmer: { "100%": { transform: "translateX(100%)" } },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
-        blob: "blob 18s ease-in-out infinite",
-        "blob-slow": "blob 26s ease-in-out infinite",
-        "gradient-pan": "gradient-pan 6s ease infinite",
-        shimmer: "shimmer 1.8s infinite",
-        "pulse-ring": "pulse-ring 2s cubic-bezier(0.4,0,0.6,1) infinite",
+        shimmer: "shimmer 1.6s infinite",
+        "fade-up": "fade-up 0.3s ease both",
       },
     },
   },

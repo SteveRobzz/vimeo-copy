@@ -8,6 +8,8 @@ out/
 *.log
 .turbo/
 .DS_Store
+# TypeScript incremental build info
+*.tsbuildinfo
 # Prisma
 packages/db/generated/
 # local media scratch

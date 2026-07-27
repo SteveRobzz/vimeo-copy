@@ -2,75 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --accent: #3355cc;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.85 0.01 250);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.78 0.01 250);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Native range inputs (player) pick up the accent. */
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
 /* ------------------------------------------------------------------ */
-/* Uppy Dashboard re-skin — bend Uppy's dark theme into the blue family */
-/* so the uploader matches the rest of the page. Scoped under .vp-uppy.  */
+/* Uppy Dashboard — light re-skin to match the Loop theme.            */
 /* ------------------------------------------------------------------ */
 .vp-uppy .uppy-Dashboard-inner {
-  background: rgba(11, 17, 32, 0.72) !important;
-  border: 1px solid rgba(79, 151, 255, 0.22) !important;
-  border-radius: 18px !important;
-  backdrop-filter: blur(8px);
-}
-
-.vp-uppy .uppy-Dashboard-AddFiles {
-  border: 2px dashed rgba(79, 151, 255, 0.35) !important;
+  background: #fff !important;
+  border: 1px solid oklch(0.9 0.008 250) !important;
   border-radius: 14px !important;
-  margin: 12px !important;
-  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.vp-uppy .uppy-Dashboard-AddFiles {
+  border: 2px dashed oklch(0.85 0.01 250) !important;
+  border-radius: 12px !important;
+  margin: 10px !important;
+  background: oklch(0.98 0.004 250) !important;
 }
 .vp-uppy .uppy-Dashboard-AddFiles:hover {
-  border-color: rgba(125, 180, 255, 0.75) !important;
-  background: rgba(47, 123, 246, 0.06) !important;
+  border-color: var(--accent) !important;
+  background: oklch(0.97 0.01 264) !important;
 }
-
-.vp-uppy .uppy-Dashboard-AddFiles-title {
-  color: #cfe3ff !important;
-  font-weight: 500;
+.vp-uppy .uppy-Dashboard-AddFiles-title,
+.vp-uppy .uppy-Dashboard-note {
+  color: oklch(0.4 0.015 250) !important;
 }
-
-/* The "browse files" link + drop hint accent. */
 .vp-uppy .uppy-Dashboard-browse {
-  color: #7db4ff !important;
-  font-weight: 600;
+  color: var(--accent) !important;
+  font-weight: 700;
 }
-.vp-uppy .uppy-Dashboard-dropFilesHereHint {
-  border: 2px dashed #4f97ff !important;
-  color: #cfe3ff !important;
-}
-
-/* Primary upload / action button → blue gradient. */
 .vp-uppy .uppy-StatusBar-actionBtn--upload,
-.vp-uppy .uppy-Dashboard-Item-action--remove,
 .vp-uppy .uppy-c-btn-primary {
-  background: linear-gradient(135deg, #4f97ff 0%, #1e5fe0 55%, #1746b0 100%) !important;
+  background: var(--accent) !important;
   color: #fff !important;
-  box-shadow: 0 8px 20px -8px rgba(47, 123, 246, 0.7);
+  border-radius: 9px !important;
 }
-.vp-uppy .uppy-StatusBar-actionBtn--upload:hover {
-  filter: brightness(1.08);
-}
-
-/* Progress fills + spinner in brand blue. */
 .vp-uppy .uppy-StatusBar-progress,
 .vp-uppy .uppy-Dashboard-Item-progress {
-  background-color: #2f7bf6 !important;
+  background-color: var(--accent) !important;
 }
-.vp-uppy .uppy-StatusBar.is-uploading .uppy-StatusBar-progress {
-  background: linear-gradient(90deg, #7db4ff, #2f7bf6) !important;
-}
-.vp-uppy .uppy-Dashboard-Item-progressIndicator svg .uppy-ProgressCircle-circle {
-  stroke: #4f97ff !important;
-}
-
-/* Thin status bar background to blend with the card. */
 .vp-uppy .uppy-StatusBar,
 .vp-uppy .uppy-DashboardContent-bar {
-  background: rgba(7, 11, 22, 0.85) !important;
-  border-top-color: rgba(79, 151, 255, 0.18) !important;
+  background: #fff !important;
+  border-top-color: oklch(0.92 0.008 250) !important;
+}
+.vp-uppy .uppy-Dashboard-Item-name,
+.vp-uppy .uppy-StatusBar-statusPrimary {
+  color: oklch(0.22 0.015 250) !important;
 }
 
-/* Utility: a shimmering sweep for "processing" bars. */
+/* Loading shimmer for skeleton/processing states. */
 .vp-shimmer {
   position: relative;
   overflow: hidden;
@@ -83,13 +93,21 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(207, 227, 255, 0.35),
+    rgba(255, 255, 255, 0.6),
     transparent
   );
-  animation: shimmer 1.8s infinite;
+  animation: shimmer 1.6s infinite;
 }
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
   }
+}
+
+/* Two-line clamp used by video card titles. */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
