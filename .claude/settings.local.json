@@ -23,7 +23,8 @@
       "Bash(git reset *)",
       "Bash(git rm *)",
       "Bash(echo \"exit=$?\")",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:vimeo-copy-web.vercel.app)"
     ]
   }
 }
