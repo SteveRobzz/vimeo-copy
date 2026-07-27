@@ -24,7 +24,14 @@
       "Bash(git rm *)",
       "Bash(echo \"exit=$?\")",
       "WebSearch",
-      "WebFetch(domain:vimeo-copy-web.vercel.app)"
+      "WebFetch(domain:vimeo-copy-web.vercel.app)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(git merge *)",
+      "Bash(git ls-tree *)",
+      "Bash(git check-ignore *)",
+      "PowerShell(curl.exe -k -s -w \"`n---HTTP:%{http_code}---\" -X POST -H \"Content-Type: application/json\" -d $body --connect-timeout 15 --max-time 50 \"https://vimeo-copy-web.vercel.app/api/uploads/create\" 2>$null)",
+      "PowerShell($body = '{\"filename\":\"diag-test.mp4\",\"contentType\":\"video/mp4\",\"title\":\"diag\",\"privacy\":\"PUBLIC\"}')"
     ]
   }
 }
