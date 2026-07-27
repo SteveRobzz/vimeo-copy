@@ -1,6 +1,9 @@
 import { NextRequest } from "next/server";
 import { Readable } from "node:stream";
 import { getObjectRange } from "@vp/core/storage";
+import { prisma } from "@vp/db";
+import { verifyStreamToken } from "@/lib/stream-token";
+import { getCurrentUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 // Bytes stream from storage on every request — never cache the route itself.
@@ -17,15 +20,32 @@ const CONTENT_TYPES: Record<string, string> = {
 };
 
 /**
- * Read-through proxy for HLS artifacts in object storage. The player loads
- *   /api/stream/videos/<id>/hls/master.m3u8
- * and every relative reference inside the playlists (720p/index.m3u8,
- * seg_000.ts, …) resolves back through this same route — so one handler serves
- * the whole tree. Range requests are honored for seeking.
- *
- * NOTE: this is deliberately unauthenticated for the MVP. Signed URLs / access
- * checks come in Step 7 (privacy) + a CDN in Step 8.
+ * Decide whether this request may read `videos/<videoId>/*`. In order of cost:
+ *   1. A valid signed stream token for this video   → allow (no DB).
+ *   2. The video is PUBLIC                            → allow (open assets).
+ *   3. The signed-in user owns the video             → allow (dashboard/preview).
+ * Everything else is denied. Playback always carries a token (step 1), so the
+ * DB paths only run for the occasional token-less request (e.g. a thumbnail).
  */
+async function authorize(
+  req: NextRequest,
+  videoId: string
+): Promise<"ok" | "forbidden" | "not_found"> {
+  const token = req.nextUrl.searchParams.get("t");
+  const verified = verifyStreamToken(token);
+  if (verified && verified.videoId === videoId) return "ok";
+
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    select: { privacy: true, ownerId: true },
+  });
+  if (!video) return "not_found";
+  if (video.privacy === "PUBLIC") return "ok";
+
+  const user = await getCurrentUser();
+  return user.id === video.ownerId ? "ok" : "forbidden";
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { key: string[] } }
@@ -36,6 +56,12 @@ export async function GET(
   if (key.includes("..") || !key.startsWith("videos/")) {
     return new Response("Not found", { status: 404 });
   }
+
+  // Enforce privacy before touching storage. Key layout: videos/<id>/...
+  const videoId = key.split("/")[1] ?? "";
+  const decision = await authorize(req, videoId);
+  if (decision === "not_found") return new Response("Not found", { status: 404 });
+  if (decision === "forbidden") return new Response("Forbidden", { status: 403 });
 
   const ext = key.split(".").pop()?.toLowerCase() ?? "";
   const range = req.headers.get("range") ?? undefined;
@@ -49,9 +75,10 @@ export async function GET(
     if (obj.contentLength != null) headers.set("content-length", String(obj.contentLength));
     if (obj.contentRange) headers.set("content-range", obj.contentRange);
     // Playlists change while processing; segments are immutable once written.
+    // Private/token'd responses must stay out of shared caches.
     headers.set(
       "cache-control",
-      ext === "m3u8" ? "no-cache" : "public, max-age=31536000, immutable"
+      ext === "m3u8" ? "no-cache, private" : "private, max-age=31536000, immutable"
     );
 
     // Node Readable → web ReadableStream for the Response body.

@@ -6,7 +6,9 @@ import Hls from "hls.js";
 export type Track = { src: string; srclang: string; label: string; default: boolean };
 
 type Props = {
-  src: string; // master.m3u8 proxy URL
+  videoId: string;
+  token: string; // signed stream token; appended to every playlist/segment request
+  src: string; // master.m3u8 proxy URL (already tokenized)
   poster?: string;
   tracks?: Track[];
 };
@@ -15,12 +17,57 @@ type Level = { height: number; bitrate: number; index: number };
 
 // hls.js-backed player. Falls back to native HLS (Safari) when MSE isn't used.
 // Exposes a small quality selector driven by the master playlist's levels.
-export default function Player({ src, poster, tracks = [] }: Props) {
+export default function Player({ videoId, token, src, poster, tracks = [] }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [levels, setLevels] = useState<Level[]>([]);
   const [current, setCurrent] = useState<number>(-1); // -1 = Auto
   const [error, setError] = useState<string | null>(null);
+
+  // Analytics: register a view on first play, then beacon watch time on exit.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    let viewId: string | null = null;
+    let counted = false;
+
+    const onPlay = async () => {
+      if (counted) return;
+      counted = true;
+      try {
+        const res = await fetch(`/api/videos/${videoId}/view`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: "{}",
+        });
+        viewId = (await res.json())?.viewId ?? null;
+      } catch {
+        /* analytics is best-effort */
+      }
+    };
+
+    const flush = () => {
+      if (!viewId) return;
+      const payload = JSON.stringify({
+        viewId,
+        watchedSeconds: video.currentTime,
+      });
+      navigator.sendBeacon?.(`/api/videos/${videoId}/view`, payload);
+    };
+
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", flush);
+    video.addEventListener("ended", flush);
+    window.addEventListener("pagehide", flush);
+
+    return () => {
+      flush();
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", flush);
+      video.removeEventListener("ended", flush);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [videoId]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -36,7 +83,26 @@ export default function Player({ src, poster, tracks = [] }: Props) {
       return;
     }
 
-    const hls = new Hls({ enableWorker: true, lowLatencyMode: false });
+    // Custom loader that appends the signed token to every request hls.js makes
+    // (variant playlists + segments), since URL resolution drops the query from
+    // the master URL when following relative references.
+    const BaseLoader = Hls.DefaultConfig.loader as any;
+    class TokenLoader extends BaseLoader {
+      load(context: any, config: any, callbacks: any) {
+        if (context?.url) {
+          const u = new URL(context.url, location.origin);
+          if (!u.searchParams.has("t")) u.searchParams.set("t", token);
+          context.url = u.toString();
+        }
+        super.load(context, config, callbacks);
+      }
+    }
+
+    const hls = new Hls({
+      enableWorker: true,
+      lowLatencyMode: false,
+      loader: TokenLoader as unknown as typeof Hls.DefaultConfig.loader,
+    });
     hlsRef.current = hls;
     hls.loadSource(src);
     hls.attachMedia(video);
@@ -60,7 +126,7 @@ export default function Player({ src, poster, tracks = [] }: Props) {
       hls.destroy();
       hlsRef.current = null;
     };
-  }, [src]);
+  }, [src, token]);
 
   function pickLevel(index: number) {
     setCurrent(index);
@@ -68,7 +134,7 @@ export default function Player({ src, poster, tracks = [] }: Props) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-brand-500/25 bg-black shadow-glow">
+    <div className="overflow-hidden rounded-[14px] border border-line bg-black shadow-card">
       <video
         ref={videoRef}
         poster={poster}
@@ -91,8 +157,8 @@ export default function Player({ src, poster, tracks = [] }: Props) {
 
       {/* Quality selector */}
       {levels.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 border-t border-white/5 bg-ink-800 px-3 py-2.5">
-          <span className="mr-1 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <div className="flex flex-wrap items-center gap-2 border-t border-line bg-panel px-3 py-2.5">
+          <span className="mr-1 text-[11px] font-semibold uppercase tracking-wider text-ink3">
             Quality
           </span>
           <QualityBtn active={current === -1} onClick={() => pickLevel(-1)}>
@@ -111,7 +177,7 @@ export default function Player({ src, poster, tracks = [] }: Props) {
       )}
 
       {error && (
-        <p className="border-t border-rose-500/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+        <p className="border-t border-danger/20 bg-[oklch(0.97_0.03_25)] px-3 py-2 text-xs text-danger">
           {error}
         </p>
       )}
@@ -133,8 +199,8 @@ function QualityBtn({
       onClick={onClick}
       className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
         active
-          ? "bg-gradient-to-br from-brand-400 to-brand-600 text-white"
-          : "bg-white/5 text-slate-300 hover:bg-white/10"
+          ? "bg-accent text-white"
+          : "border border-line2 bg-white text-ink2 hover:bg-panel"
       }`}
     >
       {children}
