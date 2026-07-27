@@ -17,7 +17,7 @@ const jbmono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loop",
+  title: "vimeo(copy)",
   description: "Upload, transcode, and stream video.",
 };
 

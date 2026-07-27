@@ -31,7 +31,7 @@ export default function LoopHeader({ userLabel }: { userLabel: string }) {
         <span className="flex h-[26px] w-[26px] items-center justify-center rounded-lg bg-accent">
           <span className="ml-0.5 h-0 w-0 border-y-[5px] border-l-[8px] border-y-transparent border-l-white" />
         </span>
-        <span className="text-[19px] font-extrabold tracking-tight">Loop</span>
+        <span className="text-[19px] font-extrabold tracking-tight">vimeo(copy)</span>
       </Link>
 
       <form onSubmit={submit} className="relative mx-auto hidden w-full max-w-[560px] flex-1 sm:block">
