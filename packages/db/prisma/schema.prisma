@@ -7,7 +7,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Runtime (pooled) connection — Supabase pooler in prod, direct locally.
+  url       = env("DATABASE_URL")
+  // Direct (non-pooled) connection for migrations/DDL. Falls back to
+  // DATABASE_URL locally where the two are the same.
+  directUrl = env("DIRECT_URL")
 }
 
 enum Privacy {

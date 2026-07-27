@@ -4,7 +4,26 @@
       "PowerShell(Get-ChildItem -Force | Select-Object Mode, Name; Write-Output \"---\"; Write-Output \"Node: $\\(node -v 2>$null\\)\"; Write-Output \"npm: $\\(npm -v 2>$null\\)\"; Write-Output \"git: $\\(git --version 2>$null\\)\"; Write-Output \"docker: $\\(docker --version 2>$null\\)\"; Write-Output \"ffmpeg: $\\(\\(Get-Command ffmpeg -ErrorAction SilentlyContinue\\).Source\\)\")",
       "PowerShell(Get-ChildItem -Force | Select-Object Mode, Length, Name; Write-Output \"---\"; \\(Get-ChildItem -Recurse -File -ErrorAction SilentlyContinue | Measure-Object\\).Count)",
       "PowerShell(function v\\($n,$c\\){ try { \"$n = \" + \\(& $c 2>$null\\) } catch { \"$n = MISSING\" } }; v \"node\" { node -v }; v \"pnpm\" { pnpm -v }; v \"npm\" { npm -v }; v \"docker\" { docker -v }; v \"ffmpeg\" { \\(ffmpeg -version | Select-Object -First 1\\) }; v \"git\" { git --version })",
-      "PowerShell(winget install *)"
+      "PowerShell(winget install *)",
+      "Bash(command -v ffmpeg ffprobe whisper tsx)",
+      "Bash(ffmpeg -version)",
+      "Bash(docker exec *)",
+      "Bash(awk '{print $NF, $\\(NF-1\\)}')",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(timeout 30 pnpm dev:web)",
+      "Bash(timeout 30 pnpm dev:worker)",
+      "Bash(netstat -ano)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(gh auth *)",
+      "Bash(git ls-remote *)",
+      "Bash(git reset *)",
+      "Bash(git rm *)",
+      "Bash(echo \"exit=$?\")",
+      "WebSearch"
     ]
   }
 }
